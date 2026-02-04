@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# 用法：
+#   ghm <pr_id>
+
+if [[ $# -ne 1 ]]; then
+  echo "Usage: ghm <pr_id>" >&2
+  exit 2
+fi
+
+exec gh pr merge "$1" --merge

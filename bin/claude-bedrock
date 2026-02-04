@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+env_file="${HOME}/.shortcut-scripts/env/claude-bedrock.env"
+if [[ -f "$env_file" ]]; then
+  # shellcheck disable=SC1090
+  source "$env_file"
+fi
+
+: "${AWS_REGION:=us-east-1}"
+: "${ANTHROPIC_PROVIDER:=bedrock}"
+
+exec env AWS_REGION="$AWS_REGION" ANTHROPIC_PROVIDER="$ANTHROPIC_PROVIDER" claude "$@"

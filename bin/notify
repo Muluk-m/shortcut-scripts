@@ -1,0 +1,5 @@
+#!/bin/bash
+msg="${1:-Claude Code requires your input}"
+osascript -e "display notification \"$msg\" with title \"Claude Code\""
+
+exit 0

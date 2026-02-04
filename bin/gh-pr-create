@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# 用法：
+#   ghpr            -> gh pr create --fill
+#   ghpr <base>     -> gh pr create --fill --base <base>
+#
+# 行为：
+# - 会输出 gh pr create 的原始输出（一般包含 PR URL）
+# - 若输出中包含 https://github.com/<owner>/<repo>/pull/<num>，则把 <num> 写入剪贴板
+
+if [[ $# -gt 1 ]]; then
+  echo "Usage: ghpr [base]" >&2
+  exit 2
+fi
+
+cmd=(gh pr create --fill)
+
+if [[ $# -eq 1 && -n "${1:-}" ]]; then
+  cmd+=(--base "$1")
+fi
+
+out="$(${cmd[@]})"
+printf '%s\n' "$out"
+
+# 提取 PR number（优先匹配 github.com/.../pull/<num>）
+pr_number="$(
+  printf '%s\n' "$out" \
+    | sed -nE 's#.*github\.com/[^[:space:]]+/pull/([0-9]+).*#\1#p' \
+    | head -n1
+)"
+
+if [[ -n "${pr_number:-}" ]]; then
+  if command -v pbcopy >/dev/null 2>&1; then
+    printf '%s' "$pr_number" | pbcopy
+    echo "Copied PR number to clipboard: $pr_number" >&2
+  else
+    echo "pbcopy not found; PR number: $pr_number" >&2
+  fi
+fi
