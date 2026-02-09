@@ -68,24 +68,30 @@ if ! command -v fzf >/dev/null 2>&1; then
   exit 1
 fi
 
-choice="$(printf '%s\n' "$list" | fzf --prompt='Cursor Recent > ' --height=40% --reverse --no-sort --with-nth=1 --delimiter=$'\\t')"
+choice="$(printf '%s\n' "$list" | fzf --prompt='Cursor Recent > ' --height=40% --reverse --no-sort --with-nth=1 --delimiter=$'\t')"
 
 if [[ -z "${choice}" ]]; then
   echo "No selection." >&2
   exit 1
 fi
 
-choice_path="${choice#*$'\\t'}"
+choice_path=""
+if [[ "$choice" == *$'\t'* ]]; then
+  IFS=$'\t' read -r _name choice_path <<< "$choice"
+else
+  choice_path="$base/$choice"
+fi
+
 if [[ -z "${choice_path}" ]]; then
   echo "Invalid selection." >&2
   exit 1
 fi
 
-if command -v cursor >/dev/null 2>&1; then
-  exec cursor "$choice_path"
-elif command -v code >/dev/null 2>&1; then
+if command -v code >/dev/null 2>&1; then
   exec code "$choice_path"
+elif command -v cursor >/dev/null 2>&1; then
+  exec cursor "$choice_path"
 else
-  echo "Neither 'cursor' nor 'code' found in PATH." >&2
+  echo "Neither 'code' nor 'cursor' found in PATH." >&2
   exit 1
 fi
